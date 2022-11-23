@@ -2,11 +2,8 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"gospike/datamodels"
-	"gospike/repository"
+	"gospike/controller"
 	"gospike/utils"
-	"log"
-	"net/http"
 )
 
 func main() {
@@ -29,31 +26,10 @@ func main() {
 func init_router(r *gin.Engine) {
 	productGroup := r.Group("/product")
 	{ //设置/product后跟的路由
-		productGroup.POST("/insert", func(c *gin.Context) {
-			var product datamodels.Product
-			if err := c.BindJSON(&product); err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-				return
-			}
-			impl := &repository.ProductImpl{}
-			lastInsertId, err := impl.Insert(&product)
-			if err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-				return
-			}
-			log.Println(lastInsertId)
-		})
-
-		productGroup.GET("/selectAll", func(c *gin.Context) {
-			var productList []*datamodels.Product
-			impl := &repository.ProductImpl{}
-			productList, err := impl.SelectAll()
-			if err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-				return
-			}
-			log.Println(len(productList))
-			c.JSON(http.StatusAccepted, gin.H{"result len": len(productList)})
-		})
+		productGroup.POST("/insert", controller.ProductInsertHandler)
+		productGroup.GET("/selectAll", controller.ProductSelectAllHandler)
+		productGroup.GET("/selectById/:productId", controller.ProductSelectByIdHandler)
+		productGroup.POST("/update", controller.ProductUpdateHandler)
+		productGroup.POST("/delete/:productId", controller.ProductDeleteHandler)
 	}
 }
